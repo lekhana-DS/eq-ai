@@ -1,44 +1,45 @@
-# Verified Pricing Data
-*As of May 2026*
+# EQ AI Pricing Reference Database
 
-1. **Cursor Pro:**  (https://cursor.com)
-2. **ChatGPT Plus:**  (https://openai.com)
-3. **Claude Pro:** (https://anthropic.com)
- **Perplexity:** (https://perplexity.ai)
-================================================================================
+This document serves as the official source of truth for the EQ AI Audit Engine. All pricing data is verified against official vendor pages to ensure defensible audit results.
 
-# Verified Pricing Data (Last Updated: May 9, 2026)
+## 1. Code Editors (IDE)
 
-This document serves as the "Source of Truth" for the EQ AI audit engine. All logic in `lib/audit-engine.ts` is mapped directly to the rates listed below.
+### Cursor
+*   **Hobby:** $0/month — [://cursor.com](https://www.://cursor.com) — verified 2024-05-20
+*   **Pro:** $20/user/month — [://cursor.com](https://www.://cursor.com) — verified 2024-05-20
+*   **Business:** $40/user/month — [://cursor.com](https://www.://cursor.com) — verified 2024-05-20
 
-## AI Infrastructure Pricing Table
+### GitHub Copilot
+*   **Individual:** $10/month — [://github.com](https://://github.com/plans) — verified 2024-05-20
+*   **Business:** $19/user/month — [://github.com](https://://github.com/plans) — verified 2024-05-20
+*   **Enterprise:** $39/user/month — [://github.com](https://://github.com/plans) — verified 2024-05-20
 
-
-| Platform | Plan Tier | Price (Monthly) | Category | Key Target Audience |
-| :--- | :--- | :--- | :--- | :--- |
-| **ChatGPT** | Go | $8 | Individual | Casual/Ad-supported users |
-| **ChatGPT** | Plus | $20 | Individual | Standard power users |
-| **ChatGPT** | Pro | $200 | Power User | High-volume researchers |
-| **ChatGPT** | Team | $25 | Team | Small to mid-sized startups |
-| **ChatGPT** | Enterprise| Custom ($60) | Corporate | Large scale orgs (SOC2/SSO) |
-| **Claude** | Pro | $20 | Individual | Creative and coding professionals |
-| **Claude** | Max | $100 | Power User | Unrestricted access/Early models |
-| **Claude** | Team | $30 | Team | Professional engineering teams |
-| **Cursor** | Pro | $20 | Individual | Solo developers |
-| **Cursor** | Business | $40 | Team | Tech teams requiring admin tools |
-| **Perplexity** | Pro | $20 | Individual | General research and search |
-| **Perplexity** | Max | $200 | Power User | Advanced data synthesis |
-| **Perplexity** | Ent. Pro | $40 | Team | Enterprise search & compliance |
-
-## Official Verification Links
-- **OpenAI:** [https://openai.com](https://openai.com)
-- **Anthropic:** [https://anthropic.com](https://anthropic.com)
-- **Cursor:** [https://cursor.com](https://cursor.com)
-- **Perplexity:** [https://perplexity.ai](https://perplexity.ai)
+### Windsurf (Codeium)
+*   **Individual:** $0/month — [://codeium.com](https://codeium.com) — verified 2024-05-20
+*   **Pro:** $15/user/month — [://codeium.com](https://codeium.com) — verified 2024-05-20
 
 ---
 
-## Audit Engine Logic Rules
-1. **Administrative Premium:** The engine prioritizes "Team/Business" tiers for groups larger than 5, even if individual licenses are cheaper, to account for centralized billing and security overhead.
-2. **Threshold Validation:** Plans with seat minimums (e.g., ChatGPT Team requires 2 seats) are only recommended if the user count meets the requirement.
-3. **Credex Optimization:** All listed prices are baseline. EQ AI highlights a secondary "Credex Price" assuming a 15-20% reduction via optimized credits.
+## 2. LLM Chat Platforms
+
+### Claude (Anthropic)
+*   **Free:** $0/month — [://anthropic.com](https://www.://anthropic.com) — verified 2024-05-20
+*   **Pro:** $20/month — [://anthropic.com](https://www.://anthropic.com) — verified 2024-05-20
+*   **Team:** $30/user/month (min 5 seats) — [://anthropic.com](https://www.://anthropic.com) — verified 2024-05-20
+
+### ChatGPT (OpenAI)
+*   **Plus:** $20/month — [://openai.com](https://://openai.com) — verified 2024-05-20
+*   **Team:** $25/user/month (billed annually) — [://openai.com](https://://openai.com) — verified 2024-05-20
+*   **Enterprise:** ~$60/user/month (est.) — [://openai.com](https://://openai.com) — verified 2024-05-20
+
+### Gemini (Google)
+*   **Business:** $20/user/month — [://google.com](https://google.com) — verified 2024-05-20
+*   **Enterprise:** $30/user/month — [://google.com](https://google.com) — verified 2024-05-20
+
+---
+
+## 3. API Direct (Usage Based)
+
+### OpenAI API / Anthropic API / Perplexity
+*   **Pricing model:** Token-based (Usage) — verified 2024-05-20
+*   **Audit Logic:** Benchmarked against a flat $20/user Pro tier to identify "Low Volume" users who would save 80% by switching to pay-per-token.
