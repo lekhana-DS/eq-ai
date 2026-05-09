@@ -1,65 +1,97 @@
-import Image from "next/image";
+"use client";
+import { useState, useEffect } from "react";
+import { calculateAudit } from "./lib/audit-engine";
+import { PRICING_DB } from "./lib/pricing-data";
 
 export default function Home() {
+  const [toolKey, setToolKey] = useState("cursor");
+  const [planId, setPlanId] = useState("pro");
+  const [users, setUsers] = useState(1);
+  const [result, setResult] = useState<any>(null);
+
+  // When tool changes, reset the plan to the first available one
+  useEffect(() => {
+    setPlanId(PRICING_DB[toolKey].plans[0].id);
+  }, [toolKey]);
+
+  const handleAudit = () => {
+    // We will update the audit engine next to accept the current planId
+    const auditResult = calculateAudit(toolKey, planId, users);
+    setResult(auditResult);
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="p-10 max-w-2xl mx-auto font-sans">
+      <h1 className="text-3xl font-bold mb-6">EQ AI: Audit Engine</h1>
+      
+      <div className="space-y-4 bg-white p-6 rounded-xl border shadow-sm">
+        {/* Tool Selection */}
+        <div>
+          <label className="block text-sm font-semibold mb-1">Select AI Tool</label>
+          <select 
+            value={toolKey} 
+            onChange={(e) => setToolKey(e.target.value)}
+            className="w-full p-2 border rounded-lg bg-gray-50"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            {Object.keys(PRICING_DB).map(key => (
+              <option key={key} value={key}>{PRICING_DB[key].name}</option>
+            ))}
+          </select>
         </div>
-      </main>
-    </div>
+
+        {/* Plan Selection */}
+        <div>
+          <label className="block text-sm font-semibold mb-1">Your Current Plan</label>
+          <select 
+            value={planId} 
+            onChange={(e) => setPlanId(e.target.value)}
+            className="w-full p-2 border rounded-lg bg-gray-50"
+          >
+            {PRICING_DB[toolKey].plans.map(plan => (
+              <option key={plan.id} value={plan.id}>{plan.name} (${plan.pricePerUser}/user)</option>
+            ))}
+          </select>
+        </div>
+
+        {/* User Count */}
+        <div>
+          <label className="block text-sm font-semibold mb-1">Number of Users</label>
+          <input 
+            type="number" 
+            value={users || ""} 
+            onChange={(e) => setUsers(parseInt(e.target.value) || 0)}
+            className="w-full p-2 border rounded-lg bg-gray-50"
+          />
+        </div>
+
+        <button 
+          onClick={handleAudit}
+          className="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 transition-colors"
+        >
+          Run Optimization Audit
+        </button>
+      </div>
+
+      {/* Results Section (Same as before, just update the labels) */}
+      {result && (
+            
+        <div className={`mt-8 p-6 rounded-xl border ${result.isSavingMoney ? 'bg-green-50 border-green-200' : 'bg-blue-50 border-blue-100'}`}>
+          <h2 className="text-xl font-bold mb-2">Results for {result.toolName}</h2>
+          <p className="text-gray-600">Current Monthly Spend: <span className="font-bold">${result.currentCost}</span></p>
+          
+          <div className="mt-4 border-t pt-4">
+            <p className="text-sm text-gray-500 font-medium uppercase tracking-wider">Strategic Recommendation</p>
+            <p className="text-gray-800 mt-1 font-semibold">{result.strategy}</p>
+            {result.isSavingMoney && (
+              <p className="text-green-600 mt-2">
+                Switching to **{result.recommendedPlan}** could save you **${result.annualSavings}** per year.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+   
+    </main>
   );
 }

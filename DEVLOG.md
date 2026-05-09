@@ -1,5 +1,5 @@
 <<<<<<< HEAD
-## Day 1 — May 7, 2026
+## Day 1 — May 8, 2026
 **Hours worked:** 2 hours
 
 **What I did:** 
@@ -14,23 +14,23 @@
 **Blockers:** Initial local Git configuration issues (resolved).  
 
 **Plan for tomorrow:** Build the Spend Input form and implement the core Audit Engine logic.
-=======
-## Day 1 — May 8, 2026
-**Hours worked:** 2
+=============================================================================
+## Day 2 — May 9, 2026
+**Hours worked:** 3
 
 **What I did:**
-- Finalized product identity as **EQ AI**.
-- Scaffolded Next.js project with TypeScript, Tailwind CSS, and ESLint.
-- Configured local Git environment and resolved initial configuration/authentication hurdles.
-- Established a professional 7-day build roadmap.
-- Defined the core value proposition: "Financial Equilibrium for AI Infrastructure."
+- Built the core `AuditEngine` logic in TypeScript, moving from static data to a deterministic calculation module.
+- Implemented a "Smart Recommendation" system that prioritizes administrative efficiency (centralized billing) over raw cost for larger teams.
+- Created a dynamic UI in Next.js that allows users to select specific plans and team sizes.
+- Fixed input handling to prevent `NaN` errors during user interaction.
 
 **What I learned:**
-The importance of a clean scaffold and professional Git hygiene (Conventional Commits) when building for an institutional-grade evaluation.
+- React state management for dependent dropdowns (Tools -> Plans).
+- The importance of "Business Logic" in fintech—saving \$20 isn't worth it if it creates 10 extra expense reports for a manager.
 
 **Blockers:**
-Initial local Git configuration issues (Path and Identity) — Resolved.
+- Encountered React rendering issues with floating HTML tags (Resolved by wrapping in fragments/divs).
 
 **Plan for tomorrow:**
-Build the "Audit Engine" logic and the Spend Input form.
->>>>>>> 1fd48b9 (docs: populate Day 1 documentation and verified pricing data)
+- Integrate the "Credex Savings Bridge" to show savings using discounted credits.
+- Start designing the "Viral Share" summary component.
