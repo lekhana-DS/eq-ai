@@ -21,3 +21,13 @@
 ## UI Layer
 - **Client-Side Forms:** Uses React `useState` and `useEffect` to manage real-time audit calculations without page reloads.
 - **Validation:** Implements type-safe parsing of user seat counts to ensure calculation integrity.
+==========================================================================================
+# System Architecture Update (Day 3)
+
+### C. Viral Loop Handler (`handleShare`)
+A client-side utility that generates URI-encoded sharing strings for X (Twitter).
+*   **Privacy Constraint:** Following assignment requirements, the handler strips all Personally Identifiable Information (PII) before generating public share links.
+
+## 4. Infrastructure & Deployment
+*   **CI/CD Pipeline:** Integrated with GitHub; every push to `main` triggers an automated production build on Vercel.
+*   

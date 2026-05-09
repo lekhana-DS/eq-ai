@@ -34,3 +34,19 @@
 **Plan for tomorrow:**
 - Integrate the "Credex Savings Bridge" to show savings using discounted credits.
 - Start designing the "Viral Share" summary component.
+===============================================================================================
+## Day 3: Deployment & Viral Loop Integration
+**Hours worked:5 hours
+
+### What I did:
+- Established a CI/CD pipeline by connecting the GitHub repository to Vercel.
+- Successfully deployed the MVP to a live production environment (https://vercel.app).
+- Implemented the "Broadcast to X" viral share feature with professional, data-driven pre-text.
+- Refined the UI of the Audit Result card to improve mobile responsiveness.
+
+### What I learned:
+- Debugged a critical `SyntaxError` in `window.open()` caused by improper template literal syntax and missing URL encoding.
+- Learned how to manage environment variables in Vercel to keep API keys secure while allowing the live site to function.
+
+### Blockers:
+- Encountered a "Window: Unable to open a window with invalid URL" error. Resolved it by properly using `${}` syntax for URI encoding and directing to the correct Twitter intent path.
