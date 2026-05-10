@@ -1,65 +1,153 @@
 // lib/audit-engine.ts
 import { PRICING_DB } from "./pricing-data";
 
+interface Plan {
+  id: string;
+  name: string;
+  pricePerUser: number;
+  minUsers?: number;
+}
+
+export interface AuditPayload {
+  toolName: string;
+  currentCost: number;
+  recommendedPlan: string;
+  recommendedCost: number;
+  annualSavings: number;
+  isSavingMoney: boolean;
+  strategy: string;
+  eligibleForCredex: boolean;
+}
+
+function estimateApiCost(toolKey: string, currentMonthlySpend: number): number | null {
+  if (toolKey === 'chatgpt' || toolKey === 'openai') return currentMonthlySpend * 0.6;
+  if (toolKey === 'claude') return currentMonthlySpend * 0.55;
+  return null;
+}
+
 export function calculateAudit(
-  toolKey: string, 
-  currentPlanId: string, 
-  userCount: number, 
-  actualMonthlySpend: number, 
+  toolKey: string,
+  currentPlanId: string,
+  userCount: number,
+  actualMonthlySpend: number,
   useCase: string
-) {
+): AuditPayload {
+  const fallback = (msg: string): AuditPayload => ({
+    toolName: toolKey,
+    currentCost: actualMonthlySpend || 0,
+    recommendedPlan: currentPlanId,
+    recommendedCost: actualMonthlySpend || 0,
+    annualSavings: 0,
+    isSavingMoney: false,
+    strategy: `⚠️ Audit incomplete: ${msg}`,
+    eligibleForCredex: false,
+  });
+
   const tool = PRICING_DB[toolKey];
-  const currentPlan = tool.plans.find((p: any) => p.id === currentPlanId);
+  if (!tool) return fallback(`Tool "${toolKey}" not found`);
 
-  if (!tool || !currentPlan) return null;
+  const currentPlan = tool.plans.find((p: Plan) => p.id === currentPlanId);
+  if (!currentPlan) return fallback(`Plan "${currentPlanId}" not found for tool "${toolKey}"`);
 
-  // Actual Spend vs. Catalog Price calculation
   const calculatedCost = currentPlan.pricePerUser * userCount;
   const currentCost = actualMonthlySpend > 0 ? actualMonthlySpend : calculatedCost;
 
-  // 1. TIER-DOWN LOGIC (Same Vendor)
-  // Logic: Is there a cheaper plan from the same vendor that supports this many users?
-  const cheaperSameVendor = tool.plans
-    .filter((p: any) => p.pricePerUser < currentPlan.pricePerUser && userCount <= (p.maxUsers || Infinity))
-    .sort((a: any, b: any) => a.pricePerUser - b.pricePerUser)[0];
-
-  // 2. CROSS-TOOL ALTERNATIVE (Defense-grade Reasoning)
-  // Logic: If UseCase is 'Coding' and tool isn't Cursor/Windsurf, suggest specialized IDEs.
-  // Logic: If UseCase is 'Data' and spend is high, suggest API Direct (80% cost reduction).
-  let alternativeSuggestion = null;
-  if (useCase === "Coding" && !["cursor", "windsurf"].includes(toolKey)) {
-    alternativeSuggestion = { name: "Cursor Pro", price: 20, reason: "IDE-native AI reduces context-switch latency vs. chat." };
-  } else if (useCase === "Data" && currentCost > 50) {
-    alternativeSuggestion = { name: "OpenAI API Direct", price: currentCost * 0.2, reason: "Usage-based billing eliminates 'idle seat' tax for automated workflows." };
+  // ========== NEW: OVERBILLING DETECTION ==========
+  // If user entered spend is higher than the plan's official price, flag savings
+  if (actualMonthlySpend > 0 && actualMonthlySpend > calculatedCost) {
+    const overbilling = actualMonthlySpend - calculatedCost;
+    const annualSavings = overbilling * 12;
+    const strategy = `You are overpaying by $${overbilling}/month ($${annualSavings}/year) compared to ${currentPlan.name}’s official pricing. Contact your vendor to adjust billing or switch to direct invoicing.`;
+    return {
+      toolName: tool.name,
+      currentCost: actualMonthlySpend,
+      recommendedPlan: currentPlan.name,
+      recommendedCost: calculatedCost,
+      annualSavings,
+      isSavingMoney: true,
+      strategy,
+      eligibleForCredex: annualSavings > 500,
+    };
   }
 
-  // 3. FINAL RECOMMENDATION
+  // 1. Cheaper plan within same vendor
+  const cheaperPlan = tool.plans
+    .filter((p: Plan) => p.pricePerUser < currentPlan.pricePerUser && userCount >= (p.minUsers || 1))
+    .sort((a: Plan, b: Plan) => b.pricePerUser - a.pricePerUser)[0];
+
+  // 2. API alternative (only for 1-2 users)
+  let apiRecommended = false;
+  let apiCost: number | null = null;
+  let apiPlanName = "";
+  if (userCount <= 2 && (toolKey === 'chatgpt' || toolKey === 'claude' || toolKey === 'openai')) {
+    const est = estimateApiCost(toolKey, currentCost);
+    if (est && est < currentCost) {
+      apiRecommended = true;
+      apiCost = est;
+      apiPlanName = toolKey === 'chatgpt' ? "OpenAI API" : "Anthropic API";
+    }
+  }
+
+  // 3. Volume discount / Credex recommendation for large teams
+  let volumeDiscount = false;
+  let volumeStrategy = "";
+  if (!cheaperPlan && !apiRecommended && userCount >= 20 && currentCost >= 200) {
+    volumeDiscount = true;
+    volumeStrategy = `Your team of ${userCount} seats spends $${currentCost}/month. Standard per‑seat pricing doesn't scale. Credex offers institutional credits at 15‑30% below retail – contact them to unlock volume discounts.`;
+  }
+
+  // 4. Alternative tool suggestions (only if no other savings found)
+  let alternativeRecommended = false;
+  let altPlanName = "";
+  let altCost = 0;
+  let altStrategy = "";
+  if (!cheaperPlan && !apiRecommended && !volumeDiscount) {
+    if (useCase === "Coding" && toolKey !== "cursor") {
+      const cursorPro = PRICING_DB["cursor"]?.plans.find((p: Plan) => p.id === "pro");
+      if (cursorPro) {
+        alternativeRecommended = true;
+        altPlanName = "Cursor Pro";
+        altCost = cursorPro.pricePerUser * userCount;
+        altStrategy = `Switch to Cursor Pro for native IDE completions. Estimated monthly cost: $${altCost}.`;
+      }
+    } else if (useCase === "Data" && currentCost > 150 && userCount <= 5) {
+      alternativeRecommended = true;
+      altPlanName = "Usage‑Based API";
+      altCost = currentCost * 0.3;
+      altStrategy = `Replace subscriptions with usage‑based API – estimated monthly cost: $${altCost}.`;
+    }
+  }
+
+  // Final decision
   let recommendedPlan = currentPlan.name;
-  let recommendedCost = calculatedCost;
-  let strategy = "Your current configuration is optimal for your scale and administrative requirements.";
+  let recommendedCost = currentCost;
+  let strategy = "Your current configuration is cost‑optimal for your team size. No changes recommended.";
+  let eligibleForCredex = false;
 
-  // Rule: Seat Redundancy Check
-  if (actualMonthlySpend > calculatedCost && userCount > 0) {
-    strategy = `Audit detected a $${actualMonthlySpend - calculatedCost} monthly delta. You are likely paying for redundant/zombie seats.`;
-  }
-
-  // Rule: Tier Mismatch Check
-  if (cheaperSameVendor) {
-    recommendedPlan = cheaperSameVendor.name;
-    recommendedCost = cheaperSameVendor.pricePerUser * userCount;
-   // Replace the old strategy line with this one:
-strategy = `We recommend the ${cheaperSameVendor.name} plan for your current scale; it offers the same performance at a better price point.`;
-
-  }
-
-  // Rule: Alternative Tool Superiority
-  if (alternativeSuggestion && (currentCost - alternativeSuggestion.price) > 15) {
-    strategy = `Protocol Shift: Based on your ${useCase} focus, ${alternativeSuggestion.name} provides ${alternativeSuggestion.reason}`;
-    // We don't force the 'recommendedPlan' to a different tool to keep the audit "Defensible" within the vendor, 
-    // but we highlight it in the strategy.
+  if (apiRecommended && apiCost !== null) {
+    recommendedPlan = apiPlanName;
+    recommendedCost = apiCost;
+    strategy = `Switch to ${apiPlanName} (pay‑as‑you‑go). Save ~$${Math.round((currentCost - apiCost) * 12)}/year.`;
+  } else if (cheaperPlan) {
+    recommendedPlan = cheaperPlan.name;
+    recommendedCost = cheaperPlan.pricePerUser * userCount;
+    strategy = `Downgrade to ${cheaperPlan.name}. Save ~$${Math.round((currentCost - recommendedCost) * 12)}/year.`;
+  } else if (volumeDiscount) {
+    recommendedPlan = "Credex Institutional Credits";
+    const discountedCost = currentCost * 0.8;
+    recommendedCost = discountedCost;
+    strategy = volumeStrategy;
+    eligibleForCredex = true;
+  } else if (alternativeRecommended) {
+    recommendedPlan = altPlanName;
+    recommendedCost = altCost;
+    strategy = altStrategy;
   }
 
   const annualSavings = Math.max(0, (currentCost - recommendedCost) * 12);
+  if (!eligibleForCredex && (annualSavings > 500 || (userCount >= 20 && currentCost >= 200))) {
+    eligibleForCredex = true;
+  }
 
   return {
     toolName: tool.name,
@@ -67,7 +155,8 @@ strategy = `We recommend the ${cheaperSameVendor.name} plan for your current sca
     recommendedPlan,
     recommendedCost,
     annualSavings,
-    isSavingMoney: annualSavings > 1,
-    strategy
+    isSavingMoney: annualSavings > 0,
+    strategy,
+    eligibleForCredex,
   };
 }
