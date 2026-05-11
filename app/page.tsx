@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { calculateAudit } from "../lib/audit-engine";
-import { PRICING_DB, USE_CASES } from "../lib/pricing-data";
+import { calculateAudit } from "./lib/audit-engine";
+import { PRICING_DB, USE_CASES } from "./lib/pricing-data";
 
 export default function Home() {
   const [toolKey, setToolKey] = useState("cursor");
