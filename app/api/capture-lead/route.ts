@@ -4,10 +4,7 @@ import { Resend } from "resend";
 import { Ratelimit } from "@upstash/ratelimit"; 
 import { Redis } from "@upstash/redis"; 
 
-const supabase = createClient( 
-  process.env.NEXT_PUBLIC_SUPABASE_URL!, 
-  process.env.SUPABASE_SERVICE_ROLE_KEY! 
-); 
+
 
 const resendApiKey = process.env.RESEND_API_KEY; 
 const resend = resendApiKey ? new Resend(resendApiKey) : null; 
@@ -29,6 +26,10 @@ const ratelimit = new Ratelimit({
 
 export async function POST(request: Request) { 
   try { 
+        const supabase = createClient( 
+      process.env.NEXT_PUBLIC_SUPABASE_URL!, 
+      process.env.SUPABASE_SERVICE_ROLE_KEY! 
+    ); 
     const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "127.0.0.1"; 
     const { success } = await ratelimit.limit(ip); 
     
