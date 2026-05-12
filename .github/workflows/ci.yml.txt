@@ -1,0 +1,36 @@
+name: Continuous Integration Suite
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  validate-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 1. Checkout Source Code
+      uses: actions/checkout@v4
+
+    - name: 2. Initialize Node.js Environment
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+        cache: 'npm'
+
+    - name: 3. Install Project Dependencies
+      run: npm ci
+
+    - name: 4. Verify Next.js Compilation Stability
+      run: npm run build
+      env:
+        # Prevents compilation crashes by mocking environment configuration
+        NEXT_PUBLIC_SUPABASE_URL: "supabase.co"
+        SUPABASE_SERVICE_ROLE_KEY: "mock-service-role-key-for-build-validation"
+        UPSTASH_REDIS_REST_URL: "upstash.io"
+        UPSTASH_REDIS_REST_TOKEN: "mock-redis-token-for-build-validation"
+
+    - name: 5. Execute Automated Audit Engine Tests
+      run: npm run test
