@@ -1,44 +1,58 @@
-# EQ AI Prompt Engineering Documentation
+# LLM Prompt Engineering & Optimization Blueprint
 
-This document outlines the LLM prompts used to power the audit narrative and social sharing components of EQ AI.
-
-## 1. Strategic Protocol Generator
-Used to generate the "Strategy" field in the audit results.
-
-**System Prompt:**
-> "You are a FinOps consultant specializing in AI infrastructure optimization. Your goal is to identify waste and provide 'Alpha' (high-value insights) for technical teams."
-
-**User Prompt:**
-> "Analyze this stack: Tool: {{tool}}, Plan: {{plan}}, Seats: {{users}}, Total Monthly Spend: ${{monthlySpend}}. Primary Use Case: {{useCase}}. 
->
-> Task: Provide a 1-sentence aggressive optimization strategy. If the user is on a high tier but has a low seat count, suggest individual pro tiers or API-direct usage. If they have high seats, suggest enterprise consolidation. Use professional, technical language like 'seat redundancy', 'tier-mismatch', and 'protocol'."
-
-### Why we wrote it this way:
-*   **Persona Bias:** By defining the persona as a "FinOps consultant," the model avoids generic advice and focuses strictly on ROI and efficiency.
-*   **Constraint:** The 1-sentence limit ensures the UI remains clean and the "Strategic Protocol" feels like a punchy, actionable command.
+This document specifies the exact large language model integration strategy, persona definitions, and iteration history implemented inside the `app/api/summary/route.ts` pipeline.
 
 ---
 
-## 2. Viral Share Generator
-Used for the "Broadcast to Network" feature.
+## 1. Production Prompt Specification
 
-**Prompt:**
-> "Generate a high-signal update for X/Twitter based on these results: ${{annualSavings}} saved per year on {{toolName}}. 
-> 
-> Guidelines: Use the word 'Alpha'. Mention 'redundant seats' or 'tier-mismatch'. Keep it professional but aggressive. Emojis allowed: 🔍, 💰 only."
+The production application routes masked engineering configurations to the `claude-3-5-sonnet-20241022` engine utilizing this dynamically compiled prompt:
+
+```text
+Write an executive infrastructure audit summary paragraph for a startup founder:
+- Profile: Team size ${teamSize}, Use Case: ${useCase}
+- Metrics: Spending $${currentSpend}/mo, savings potential: $${monthlySavings}/mo.
+- Primary Component Stack: ${topOverspendTool}
+
+Constraints: Maximum 100 words. Maintain a professional, data-driven financial tone. Highlight the structural overspend leak.
+```
 
 ---
 
-## 3. Iteration History: What Didn't Work
+## 2. Design Rationale: Why It Was Written This Way
 
-### Attempt 1: "Save money on AI"
-*   **Result:** Too generic. Sounded like a basic coupon tool.
-*   **Fix:** Changed vocabulary to "Financial Equilibrium" and "Infrastructure Audit" to appeal to CTOs and Lead Devs.
+The template was engineered with four strict constraints to guarantee immediate conversion value for the Credex B2B funnel:
 
-### Attempt 2: Multiple Suggestion Lists
-*   **Result:** UI bloat. Users felt overwhelmed by 3-4 different options.
-*   **Fix:** Hard-coded the engine to find the *single most optimal* path and present it as the "Strategic Protocol."
+*   **Role-Targeted Persona Anchor:** Explicitly directing the model to write *"for a startup founder"* forces it to drop dense technical jargon and use high-impact financial messaging. This positions the audit as an urgent runway optimization tool.
+*   **Isolated Parametric Variable Matrix:** Injecting structured data parameters (`${teamSize}`, `${currentSpend}`, etc.) ensures the model works only with verified, pre-calculated integers from our mathematical engine, preventing mathematical errors.
+*   **Enforced Word Count Boundary:** Capping the length at a *"Maximum 100 words"* prevents long-winded paragraphs. This fits cleanly inside mobile views without breaking user interface layouts.
+*   **Strategic Overspend Highlighting:** Forcing the AI to *"Highlight the structural overspend leak"* acts as a psychological hook. It drives founders to share their email addresses to unlock the detailed breakdown.
 
-### Attempt 3: No Persistence
-*   **Result:** Users lost data on refresh, leading to high bounce rates during "comparison" sessions.
-*   **Fix:** Implemented `localStorage` hooks to ensure form state persists across sessions.
+---
+
+## 3. Engineering Iteration History: What Didn't Work
+
+Before landing on the current production layout, two previous prompt iterations were tested and rejected:
+
+### The Naive First Prompt (Failed)
+```text
+Review these audit details: ${JSON.stringify(body)} and give me an audit summary.
+```
+*   **Why it failed:** Passing raw JSON objects directly caused the model to hallucinate billing intervals, frequently confusing monthly and annualized savings. The output exceeded 250 words and sounded like standard boilerplate text instead of an executive summary.
+
+### The Over-Constrained Second Prompt (Failed)
+```text
+Act as a B2B SaaS accountant. Write a 3-sentence summary with exactly 1 bullet point explaining why this team is losing money. Use words like runway.
+```
+*   **Why it failed:** Adding contradictory structural rules (e.g., matching sentence counts against bullet point mandates) caused the model to truncate important numbers. It often forgot to print the actual dollar amounts when trying to maintain strict line boundaries.
+
+---
+
+## 4. Operational Resilience & Fallback Coverage
+
+To insulate the platform against API downtime, token limit blocks, or networking delays, the handler is wrapped inside a safe try/catch architecture:
+
+1. **Local Parameter Tracking:** If the third-party network drops the connection or flags a timeout error, the runtime logic catches the exception immediately.
+2. **Deterministic String Injections:** The system bypasses generative text pathways and instantly serves a pre-formatted fallback template:
+   `"Based on your audited profile with ${teamSize} active seats... your organization can recapture approximately $${monthlySavings}/mo..."`
+3. **Seamless UX Continuity:** The user receives a clean, data-driven report without realizing an upstream API error occurred, protecting conversion rates under heavy traffic.
