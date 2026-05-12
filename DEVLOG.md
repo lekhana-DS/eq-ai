@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 ## Day 1 — May 8, 2026
 **Hours worked:** 2 hours
 
