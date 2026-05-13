@@ -15,6 +15,9 @@ A free, production-ready lead-generation web application built for **Credex** th
 <img width="636" height="334" alt="image" src="https://github.com/user-attachments/assets/55d48b7f-2290-4469-a831-ede40d014c63" />
 <img width="617" height="375" alt="image" src="https://github.com/user-attachments/assets/f1e8399d-474c-4389-ae9a-d3a7dd5577a5" />
 <img width="678" height="147" alt="image" src="https://github.com/user-attachments/assets/fe7d0efb-1cff-4e01-a8bf-15ea79e8ac6d" />
+<img width="697" height="300" alt="image" src="https://github.com/user-attachments/assets/f1ab8144-eba5-47ce-a38a-e0bce4a87c07" />
+<img width="706" height="130" alt="image" src="https://github.com/user-attachments/assets/6eec23e8-97ee-4125-8814-9aae32605762" />
+
 
 ---
 
