@@ -47,14 +47,13 @@ export default function Home() {
     if (firstPlan && planId !== firstPlan) setPlanId(firstPlan);
   }, [toolKey]);
 
-  const handleAudit = async () => {
+   const handleAudit = async () => {
     const audit = calculateAudit(toolKey, planId, users, monthlySpend, useCase);
     if (!audit) {
       setResult(null);
       setAiSummary("Failed to calculate audit.");
       return;
     }
-
     setResult(audit);
     setAiSummary("");
     setLoadingAI(true);
@@ -93,6 +92,7 @@ export default function Home() {
     teamSize: "",
     username_verification: "",
   });
+  
   const [submittingLead, setSubmittingLead] = useState(false);
 
   const handleLeadSubmit = async (e: React.FormEvent) => {
@@ -117,6 +117,7 @@ export default function Home() {
         submittedAt: new Date().toISOString(),
       };
 
+      // 1. Submit lead details to your existing backend capture database
       const res = await fetch("/api/capture-lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -128,11 +129,37 @@ export default function Home() {
         console.error("Lead error:", res.status, text);
         throw new Error(`Submit failed: ${res.status}`);
       }
-
       await res.json();
+
+      // 2. Trigger automated email notifications through your /api/send endpoint
+      try {
+        await fetch('/api/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            email: leadData.email,
+            auditDetails: payload.auditData 
+          }),
+        });
+      } catch (emailErr) {
+        // Log errors to console but don't disrupt user workflow if email fails
+        console.error("Resend notification dispatch failed:", emailErr);
+      }
+
+      // 3. Complete structural state transitions and clear parameters safely
       setLeadSubmitted(true);
-      setLeadData({ email: "", company: "", role: "", teamSize: "", username_verification: "" });
+      setLeadData({ 
+        email: "", 
+        company: "", 
+        role: "", 
+        teamSize: "", 
+        username_verification: "" 
+      });
+      
       setTimeout(() => setShowLeadForm(false), 3000);
+      
     } catch (err) {
       console.error(err);
       alert("Lead submission failed. Please try again.");
@@ -140,6 +167,7 @@ export default function Home() {
       setSubmittingLead(false);
     }
   };
+
 
   const handleShareLinkCopy = () => {
     if (!result) return;
@@ -456,6 +484,7 @@ const FAQ_DATA = [
     a: "Yes. The tool features dedicated calculation rules built to analyze mixed configurations, helping teams assess whether migrating from individual flat-rate subscriptions over to consumption-based API access is cheaper."
   }
 ];
+// Append this component at the absolute bottom of page.tsx (Outside your main component)
 export function FAQSection() {
   const [openFaq, setOpenFaq] = React.useState<number | null>(null);
 
@@ -498,4 +527,3 @@ export function FAQSection() {
     </section>
   );
 }
-
