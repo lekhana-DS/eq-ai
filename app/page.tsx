@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { calculateAudit } from "./lib/audit-engine";
 import { PRICING_DB, USE_CASES } from "./lib/pricing-data";
+import React from "react";
 export default function Home() {
   const [toolKey, setToolKey] = useState("cursor");
   const [planId, setPlanId] = useState("pro");
@@ -428,6 +429,73 @@ export default function Home() {
           </div>
         </div>
       )}
+      <FAQSection />
     </main>
   );
 }
+// Place this array at the absolute bottom of page.tsx (Outside your component)
+const FAQ_DATA = [
+  {
+    q: "Do I need to connect our primary corporate credit cards or management tools to run this audit?",
+    a: "No. The computation engine processes values purely based on the active user seat counts, tools, and plan tiers you enter manually. Your corporate financial data remains completely unlinked, secure, and untouched."
+  },
+  {
+    q: "How does this tool stay free without selling my startup's operational data?",
+    a: "The calculation engine is offered entirely free by Credex to provide immediate utility to engineering leaders. For organizations discovering massive structural tool overspend, Credex offers optimization consulting paths to transition them into specialized, lower-cost corporate credit access pools."
+  },
+  {
+    q: "Are my company's details kept completely private if I share my results page?",
+    a: "Yes. The \"Share Results\" link mechanism strips away all company and personal identifiers locally before compressing the parameters into a stateless, encrypted Base64 URL hash. Shared pages render strictly anonymized pricing rows."
+  },
+  {
+    q: "How accurate and up-to-date is the underlying pricing data used by the engine?",
+    a: "The logic matrix evaluates your inputs against real data hardcoded inside PRICING_DATA.md. This file is updated weekly against official, live pricing configurations from Cursor, GitHub, OpenAI, and Anthropic."
+  },
+  {
+    q: "Can the engine accurately evaluate custom enterprise billing packages or heavy API usage?",
+    a: "Yes. The tool features dedicated calculation rules built to analyze mixed configurations, helping teams assess whether migrating from individual flat-rate subscriptions over to consumption-based API access is cheaper."
+  }
+];
+export function FAQSection() {
+  const [openFaq, setOpenFaq] = React.useState<number | null>(null);
+
+  return (
+    <section className="mt-16 pt-10 border-t border-neutral-200 space-y-6">
+      <div className="space-y-1">
+        <h2 className="text-xl font-bold tracking-tight text-neutral-900">
+          Frequently Asked Questions
+        </h2>
+        <p className="text-sm text-neutral-500">
+          Understand how the EQ AI audit architecture computes and protects parameters.
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        {FAQ_DATA.map((item, index) => (
+          <div 
+            key={index}
+            className="border border-neutral-300 rounded-lg bg-neutral-50 overflow-hidden transition-all shadow-sm"
+          >
+            <button
+              type="button"
+              onClick={() => setOpenFaq(openFaq === index ? null : index)}
+              className="w-full flex items-center justify-between p-4 text-left font-semibold text-sm text-neutral-800 hover:text-neutral-950 transition-colors"
+            >
+              <span>{item.q}</span>
+              <span className="ml-4 text-neutral-400 font-mono text-base shrink-0 select-none">
+                {openFaq === index ? '−' : '+'}
+              </span>
+            </button>
+            
+            {openFaq === index && (
+              <div className="p-4 pt-0 text-sm text-neutral-600 leading-relaxed border-t border-neutral-200 bg-neutral-100/50">
+                {item.a}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
