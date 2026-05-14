@@ -4,7 +4,7 @@ This document logs the tactical feedback, structural friction points, and operat
 
 ---
 
-## Interview 1: Abhishek — Startup Founder (Seed Stage SaaS Startup, 12 People)
+## Interview 1: AB — Startup Founder (Seed Stage SaaS Startup, 12 People)
 
 ### 💬 Direct Core Quotes:
 *   *"We are paying for separate OpenAI Pro seats while half the engineering team is already expensing standalone Cursor Business licenses that use the exact same underlying models."*
@@ -19,7 +19,7 @@ This insight directly led to the implementation of a dedicated **"Redundancy Che
 
 ---
 
-## Interview 2: Mehul Chandak — Independent Developer & Technical Founder (Bootstrapped Side Project)
+## Interview 2: JP — Independent Developer & Technical Founder (Bootstrapped Side Project)
 
 ### 💬 Direct Core Quotes:
 *   *"I was forced to jump tiers from an Individual plan into a costly Team tier purely because I kept hitting the restrictive hourly message limits on the web app."*
@@ -34,7 +34,7 @@ I refactored the computational engine to support a **"Subscription vs. Raw API C
 
 ---
 
-## Interview 3: Kavya — Engineering Manager (Series A Growth Stage Team, 22 Devs)
+## Interview 3: KV — Engineering Manager (Series A Growth Stage Team, 22 Devs)
 
 ### 💬 Direct Core Quotes:
 *   *"Tracking down fragmented invoices across fifteen individual engineer expense reports every single month creates massive operational overhead for our accounting team."*
